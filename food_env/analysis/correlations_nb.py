@@ -39,7 +39,14 @@ owob = owob[owob["overweight_year_6"] != "u"].reset_index(drop=True)
 owob["overweight_and_obese_year_6"] = (
     owob["overweight_year_6"] + owob["obese_incl_severely_obese_year_6"]
 )
-owob = owob[["area", "overweight_and_obese_year_6"]]
+owob = owob[
+    [
+        "area",
+        "overweight_and_obese_year_6",
+        "overweight_year_6",
+        "obese_incl_severely_obese_year_6",
+    ]
+]
 # owob.sort_values(by=['overweight_and_obese_year_6'])
 
 # %%
@@ -49,8 +56,11 @@ mh.loc[490] = mh.loc[468] + mh.loc[463]
 mh.at[490, "areaname"] = "Hackney and City of London"
 mh.drop([468, 463], axis=0, inplace=True)
 mh.reset_index(drop=True, inplace=True)
-mh["pupil_mental_health_needs"] = mh["count"] / mh["denominator"] * 100
-mh
+mh["pupil_mental_health_needs"] = (
+    mh["school_mental_health_needs_count"]
+    / mh["school_mental_health_needs_denominator"]
+    * 100
+)
 
 # %%
 # load and reformat population data and filter for london
@@ -71,7 +81,13 @@ li_owob = (
     )
     .drop(columns=["area"])
     .rename(columns={"2019/20": "n_children_abs_low_income_families_2019-20"})
-    .astype({"overweight_and_obese_year_6": "float"})
+    .astype(
+        {
+            "overweight_and_obese_year_6": "float",
+            "overweight_year_6": "float",
+            "obese_incl_severely_obese_year_6": "float",
+        }
+    )
 )
 # merge low income with obesity datasets with population data
 li_owob_ldn = (
@@ -101,7 +117,13 @@ li_owob_ldn_mh = (
         left_on="local_authority",
         right_on="areaname",
     )
-    .drop(columns=["count", "denominator", "areaname"])
+    .drop(
+        columns=[
+            "school_mental_health_needs_count",
+            "school_mental_health_needs_denominator",
+            "areaname",
+        ]
+    )
     .astype({"pupil_mental_health_needs": "float"})
 )
 
@@ -116,6 +138,8 @@ missing
 for_corr = li_owob_ldn_mh[
     [
         "overweight_and_obese_year_6",
+        "overweight_year_6",
+        "obese_incl_severely_obese_year_6",
         "n_children_abs_low_income_families_2019-20/population",
         "pupil_mental_health_needs",
     ]
@@ -129,9 +153,5 @@ for_corr = li_owob_ldn_mh[
 # plot correlations
 correlations = for_corr.corr()
 correlations.style.background_gradient(cmap="Blues")
-
-# %%
-# low income "strongly" correlated with obesity
-# mental health "very weakly" correlated with low income and obesity
 
 # %%
