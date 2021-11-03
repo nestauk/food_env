@@ -24,7 +24,7 @@ def get_childhood_obesity():
         .rename(
             columns={
                 "ONS Code": "ons_code",
-                "Area": "area",
+                "Area": "areaname",
                 "Prevalence (%)": "underweight_reception",
                 "Prevalence (%).1": "underweight_year_6",
                 "Prevalence (%).2": "healthyweight_reception",
@@ -40,5 +40,5 @@ def get_childhood_obesity():
             }
         )
     )
-    cw.at[10, "area"] = "Hackney and City of London"
+    cw.at[10, "areaname"] = "Hackney and City of London"
     return cw
