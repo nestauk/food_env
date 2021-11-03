@@ -117,3 +117,17 @@ def get_high_night_time_transport_noise():
             "denominator": "night_time_transport_noise_denominator",
         }
     )
+
+
+def get_low_income():
+    """Returns dataframe of areaname, count and denominator
+    for children in absolute low income"""
+    wdoh = get_all_wider_determinants_of_health()
+    return wdoh[wdoh["indicator id"] == 93701][
+        ["areaname", "count", "denominator"]
+    ].rename(
+        columns={
+            "count": "low_income_count",
+            "denominator": "low_income_denominator",
+        }
+    )
