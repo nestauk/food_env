@@ -30,3 +30,24 @@ def combinbe_hackney_and_city_of_london(
     indicator.drop([hackney_idx, city_of_london_idx], axis=0, inplace=True)
     indicator.reset_index(drop=True, inplace=True)
     return indicator
+
+
+def add_percentage(indicator, new_percent_col, numerator_col, denominator_col):
+    """Add percentage column to dataframe and drop related numerator
+    and denominator columns
+
+    Args:
+        indicator (df): indicator dataframe that needs percentage column added
+        new_percent_col (str): dataframe column name for new percentage column
+        numerator_col (str): dataframe column name with numerator data
+        denominator_col (str): dataframe column name with denominator data
+
+    Returns:
+        (df): indicator dataframe with percentage column added
+    """
+    indicator[new_percent_col] = (
+        indicator[numerator_col] / indicator[denominator_col] * 100
+    )
+    return indicator.drop(columns=[numerator_col, denominator_col]).astype(
+        {new_percent_col: "float"}
+    )
