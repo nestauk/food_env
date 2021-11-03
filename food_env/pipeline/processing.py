@@ -1,4 +1,4 @@
-def combinbe_hackney_and_city_of_london(
+def combine_hackney_and_city_of_london(
     indicator, region_lbl, hackney_lbl="Hackney", city_of_london_lbl="City of London"
 ):
     """Given a dataframe, combine rows for Hackney and City of London
