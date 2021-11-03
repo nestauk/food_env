@@ -16,19 +16,29 @@
 
 # %%
 import pandas as pd
-from food_env.getters.department_work_pensions import get_low_income
-from food_env.getters.office_national_statisics import get_population
 from food_env.getters.department_health import get_childhood_obesity
-from food_env.getters.public_health_england import get_school_mental_health_needs
+from food_env.getters.public_health_england import (
+    get_school_mental_health_needs,
+    get_low_income,
+    get_school_readiness,
+    get_fuel_poverty,
+    get_high_night_time_transport_noise,
+)
+from food_env.pipeline.processing import (
+    combinbe_hackney_and_city_of_london,
+    add_percentage,
+)
 
 # %%
 # load and reformat low income data
 li = get_low_income()
-li.loc[217] = li.loc[87] + li.loc[86]
-li.at[217, "local_authority"] = "Hackney and City of London"
-li.drop([87, 86], axis=0, inplace=True)
-li.reset_index(drop=True, inplace=True)
-li = li[["local_authority", "2019/20"]]
+li = combinbe_hackney_and_city_of_london(indicator=li, region_lbl="areaname")
+li = add_percentage(
+    indicator=li,
+    new_percent_col="low_income_%",
+    numerator_col="low_income_count",
+    denominator_col="low_income_denominator",
+)
 
 # %%
 # load and reformat child obesity data
@@ -46,106 +56,130 @@ owob = owob[
         "overweight_year_6",
         "obese_incl_severely_obese_year_6",
     ]
-]
+].astype(
+    {
+        "overweight_and_obese_year_6": "float",
+        "overweight_year_6": "float",
+        "obese_incl_severely_obese_year_6": "float",
+    }
+)
 # owob.sort_values(by=['overweight_and_obese_year_6'])
 
 # %%
-# load and reformat pupil mental health needs
+# load and reformat pupil mental health needs data
 mh = get_school_mental_health_needs()
-mh.loc[490] = mh.loc[468] + mh.loc[463]
-mh.at[490, "areaname"] = "Hackney and City of London"
-mh.drop([468, 463], axis=0, inplace=True)
-mh.reset_index(drop=True, inplace=True)
-mh["pupil_mental_health_needs"] = (
-    mh["school_mental_health_needs_count"]
-    / mh["school_mental_health_needs_denominator"]
-    * 100
+mh = combinbe_hackney_and_city_of_london(indicator=mh, region_lbl="areaname")
+mh = add_percentage(
+    indicator=mh,
+    new_percent_col="pupil_mental_health_needs_%",
+    numerator_col="school_mental_health_needs_count",
+    denominator_col="school_mental_health_needs_denominator",
 )
 
 # %%
-# load and reformat population data and filter for london
-pop = get_population()[["region_name", "geography", "all_ages"]].rename(
-    columns={"all_ages": "population"}
+# load and reformat school readiness data
+sr = get_school_readiness()
+sr = combinbe_hackney_and_city_of_london(indicator=sr, region_lbl="areaname")
+sr = add_percentage(
+    indicator=sr,
+    new_percent_col="school_readiness_%",
+    numerator_col="school_readiness_count",
+    denominator_col="school_readiness_denominator",
 )
-ldn = pop[pop["geography"] == "London Borough"].drop(columns=["geography"])
-ldn.loc[247] = ldn.loc[215] + ldn.loc[216]
-ldn.at[247, "region_name"] = "Hackney and City of London"
-ldn.drop([215, 216], axis=0, inplace=True)
-ldn.reset_index(drop=True, inplace=True)
+
+# %%
+# load and reformat fuel poverty data
+fp = get_fuel_poverty()
+fp = combinbe_hackney_and_city_of_london(indicator=fp, region_lbl="areaname")
+fp = add_percentage(
+    indicator=fp,
+    new_percent_col="fuel_pov_%",
+    numerator_col="fuel_pov_count",
+    denominator_col="fuel_pov_denominator",
+)
+
+# %%
+# load and reformat high night time transport noise data
+tn = get_high_night_time_transport_noise()
+tn = combinbe_hackney_and_city_of_london(indicator=tn, region_lbl="areaname")
+tn = add_percentage(
+    indicator=tn,
+    new_percent_col="night_time_transport_noise_%",
+    numerator_col="night_time_transport_noise_count",
+    denominator_col="night_time_transport_noise_denominator",
+)
 
 # %%
 # merge low income with obesity datasets
-li_owob = (
-    pd.merge(
-        left=owob, right=li, how="inner", left_on="area", right_on="local_authority"
-    )
-    .drop(columns=["area"])
-    .rename(columns={"2019/20": "n_children_abs_low_income_families_2019-20"})
-    .astype(
-        {
-            "overweight_and_obese_year_6": "float",
-            "overweight_year_6": "float",
-            "obese_incl_severely_obese_year_6": "float",
-        }
-    )
-)
-# merge low income with obesity datasets with population data
-li_owob_ldn = (
-    pd.merge(
-        left=li_owob,
-        right=ldn,
-        how="inner",
-        left_on="local_authority",
-        right_on="region_name",
-    )
-    .drop(columns=["region_name"])
-    .astype({"population": "float"})
-)
+li_owob = pd.merge(
+    left=owob, right=li, how="inner", left_on="area", right_on="areaname"
+).drop(columns=["areaname"])
 
-# normalise low income with population
-li_owob_ldn["n_children_abs_low_income_families_2019-20/population"] = (
-    li_owob_ldn["n_children_abs_low_income_families_2019-20"]
-    / li_owob_ldn["population"]
-)
 
-# merge low income with obesity datasets with population data with mental health data
-li_owob_ldn_mh = (
-    pd.merge(
-        left=li_owob_ldn,
-        right=mh,
-        how="inner",
-        left_on="local_authority",
-        right_on="areaname",
-    )
-    .drop(
-        columns=[
-            "school_mental_health_needs_count",
-            "school_mental_health_needs_denominator",
-            "areaname",
-        ]
-    )
-    .astype({"pupil_mental_health_needs": "float"})
-)
+# merge low income with obesity datasets with mental health data
+li_owob_mh = pd.merge(
+    left=li_owob,
+    right=mh,
+    how="inner",
+    left_on="area",
+    right_on="areaname",
+).drop(columns=["areaname"])
+
+# merge low income with obesity datasets with mental health data with school readiness
+li_owob_mh_sr = pd.merge(
+    left=li_owob_mh,
+    right=sr,
+    how="inner",
+    left_on="area",
+    right_on="areaname",
+).drop(columns=["areaname"])
+
+# merge low income with obesity datasets with mental health data with school readiness with fuel poverty
+li_owob_mh_sr_fp = pd.merge(
+    left=li_owob_mh_sr,
+    right=fp,
+    how="inner",
+    left_on="area",
+    right_on="areaname",
+).drop(columns=["areaname"])
+
+# merge low income with obesity datasets with mental health data with school readiness with fuel poverty with high night time transport noise
+li_owob_mh_sr_fp_tn = pd.merge(
+    left=li_owob_mh_sr_fp,
+    right=tn,
+    how="inner",
+    left_on="area",
+    right_on="areaname",
+).drop(columns=["areaname"])
+
+li_owob_mh_sr_fp_tn
 
 # %%
-# check which local authorities are missing from merged dataset
-missing = list(sorted(set(ldn.region_name) - set(li_owob.local_authority)))
-missing
-# local authorities are missing as numbers too small in Enfield/Wandsworth for the obesity data
+# # check which local authorities are missing from merged dataset
+# missing = list(sorted(set(ldn.region_name) - set(li_owob.local_authority)))
+# missing
+# # local authorities are missing as numbers too small in Enfield/Wandsworth for the obesity data
 
 # %%
 # select relevant columns for correlations
-for_corr = li_owob_ldn_mh[
+for_corr = li_owob_mh_sr_fp_tn[
     [
         "overweight_and_obese_year_6",
         "overweight_year_6",
         "obese_incl_severely_obese_year_6",
-        "n_children_abs_low_income_families_2019-20/population",
-        "pupil_mental_health_needs",
+        "low_income_%",
+        "pupil_mental_health_needs_%",
+        "school_readiness_%",
+        "fuel_pov_%",
+        "night_time_transport_noise_%",
     ]
 ].rename(
     columns={
-        "n_children_abs_low_income_families_2019-20/population": "children_low_income"
+        "low_income_%": "children_low_income",
+        "pupil_mental_health_needs_%": "pupil_mental_health_needs",
+        "school_readiness_%": "school_readiness",
+        "fuel_pov_%": "fuel_poverty",
+        "night_time_transport_noise_%": "night_time_transport_noise",
     }
 )
 
