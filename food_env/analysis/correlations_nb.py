@@ -23,6 +23,8 @@ from food_env.getters.public_health_england import (
     get_school_readiness,
     get_fuel_poverty,
     get_high_night_time_transport_noise,
+    get_violent_crime,
+    get_youth_justice_system,
 )
 from food_env.pipeline.processing import (
     combine_hackney_and_city_of_london,
@@ -110,6 +112,30 @@ tn = add_percentage(
 )
 
 # %%
+# load and reformat violent crime data
+vc = get_violent_crime()
+vc = combine_hackney_and_city_of_london(indicator=vc, region_lbl="areaname")
+# add_percentage here will not calc a % but will give rate per 100 people
+vc = add_percentage(
+    indicator=vc,
+    new_percent_col="violent_crime_per_100_people",
+    numerator_col="violent_crime_count",
+    denominator_col="violent_crime_denominator",
+)
+
+# %%
+# load and reformat entrants into youth justice system
+yj = get_youth_justice_system().fillna(0)
+yj = combine_hackney_and_city_of_london(indicator=yj, region_lbl="areaname")
+# add_percentage here will not calc a % but will give rate per 100 people
+yj = add_percentage(
+    indicator=yj,
+    new_percent_col="first_time_entrants_to_the_youth_justice_system_per_100_people",
+    numerator_col="youth_justice_count",
+    denominator_col="youth_justice_denominator",
+)
+
+# %%
 # merge all datasets
 combined_datasets = (
     owob.merge(li, on="areaname")
@@ -117,6 +143,8 @@ combined_datasets = (
     .merge(sr, on="areaname")
     .merge(fp, on="areaname")
     .merge(tn, on="areaname")
+    .merge(vc, on="areaname")
+    .merge(yj, on="areaname")
 )
 
 # %%
@@ -134,6 +162,8 @@ for_corr = combined_datasets.rename(
         "school_readiness_%": "school_readiness",
         "fuel_pov_%": "fuel_poverty",
         "night_time_transport_noise_%": "night_time_transport_noise",
+        "violent_crime_per_100_people": "violent_crime",
+        "first_time_entrants_to_the_youth_justice_system_per_100_people": "youth_justice_system",
     }
 )
 
