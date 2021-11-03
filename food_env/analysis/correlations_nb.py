@@ -25,14 +25,14 @@ from food_env.getters.public_health_england import (
     get_high_night_time_transport_noise,
 )
 from food_env.pipeline.processing import (
-    combinbe_hackney_and_city_of_london,
+    combine_hackney_and_city_of_london,
     add_percentage,
 )
 
 # %%
 # load and reformat low income data
 li = get_low_income()
-li = combinbe_hackney_and_city_of_london(indicator=li, region_lbl="areaname")
+li = combine_hackney_and_city_of_london(indicator=li, region_lbl="areaname")
 li = add_percentage(
     indicator=li,
     new_percent_col="low_income_%",
@@ -43,7 +43,7 @@ li = add_percentage(
 # %%
 # load and reformat child obesity data
 owob = get_childhood_obesity()[
-    ["ons_code", "area", "overweight_year_6", "obese_incl_severely_obese_year_6"]
+    ["ons_code", "areaname", "overweight_year_6", "obese_incl_severely_obese_year_6"]
 ].head(-10)
 owob = owob[owob["overweight_year_6"] != "u"].reset_index(drop=True)
 owob["overweight_and_obese_year_6"] = (
@@ -51,7 +51,7 @@ owob["overweight_and_obese_year_6"] = (
 )
 owob = owob[
     [
-        "area",
+        "areaname",
         "overweight_and_obese_year_6",
         "overweight_year_6",
         "obese_incl_severely_obese_year_6",
@@ -68,7 +68,7 @@ owob = owob[
 # %%
 # load and reformat pupil mental health needs data
 mh = get_school_mental_health_needs()
-mh = combinbe_hackney_and_city_of_london(indicator=mh, region_lbl="areaname")
+mh = combine_hackney_and_city_of_london(indicator=mh, region_lbl="areaname")
 mh = add_percentage(
     indicator=mh,
     new_percent_col="pupil_mental_health_needs_%",
@@ -79,7 +79,7 @@ mh = add_percentage(
 # %%
 # load and reformat school readiness data
 sr = get_school_readiness()
-sr = combinbe_hackney_and_city_of_london(indicator=sr, region_lbl="areaname")
+sr = combine_hackney_and_city_of_london(indicator=sr, region_lbl="areaname")
 sr = add_percentage(
     indicator=sr,
     new_percent_col="school_readiness_%",
@@ -90,7 +90,7 @@ sr = add_percentage(
 # %%
 # load and reformat fuel poverty data
 fp = get_fuel_poverty()
-fp = combinbe_hackney_and_city_of_london(indicator=fp, region_lbl="areaname")
+fp = combine_hackney_and_city_of_london(indicator=fp, region_lbl="areaname")
 fp = add_percentage(
     indicator=fp,
     new_percent_col="fuel_pov_%",
@@ -101,7 +101,7 @@ fp = add_percentage(
 # %%
 # load and reformat high night time transport noise data
 tn = get_high_night_time_transport_noise()
-tn = combinbe_hackney_and_city_of_london(indicator=tn, region_lbl="areaname")
+tn = combine_hackney_and_city_of_london(indicator=tn, region_lbl="areaname")
 tn = add_percentage(
     indicator=tn,
     new_percent_col="night_time_transport_noise_%",
@@ -110,49 +110,14 @@ tn = add_percentage(
 )
 
 # %%
-# merge low income with obesity datasets
-li_owob = pd.merge(
-    left=owob, right=li, how="inner", left_on="area", right_on="areaname"
-).drop(columns=["areaname"])
-
-
-# merge low income with obesity datasets with mental health data
-li_owob_mh = pd.merge(
-    left=li_owob,
-    right=mh,
-    how="inner",
-    left_on="area",
-    right_on="areaname",
-).drop(columns=["areaname"])
-
-# merge low income with obesity datasets with mental health data with school readiness
-li_owob_mh_sr = pd.merge(
-    left=li_owob_mh,
-    right=sr,
-    how="inner",
-    left_on="area",
-    right_on="areaname",
-).drop(columns=["areaname"])
-
-# merge low income with obesity datasets with mental health data with school readiness with fuel poverty
-li_owob_mh_sr_fp = pd.merge(
-    left=li_owob_mh_sr,
-    right=fp,
-    how="inner",
-    left_on="area",
-    right_on="areaname",
-).drop(columns=["areaname"])
-
-# merge low income with obesity datasets with mental health data with school readiness with fuel poverty with high night time transport noise
-li_owob_mh_sr_fp_tn = pd.merge(
-    left=li_owob_mh_sr_fp,
-    right=tn,
-    how="inner",
-    left_on="area",
-    right_on="areaname",
-).drop(columns=["areaname"])
-
-li_owob_mh_sr_fp_tn
+# merge all datasets
+combined_datasets = (
+    owob.merge(li, on="areaname")
+    .merge(mh, on="areaname")
+    .merge(sr, on="areaname")
+    .merge(fp, on="areaname")
+    .merge(tn, on="areaname")
+)
 
 # %%
 # # check which local authorities are missing from merged dataset
@@ -161,19 +126,8 @@ li_owob_mh_sr_fp_tn
 # # local authorities are missing as numbers too small in Enfield/Wandsworth for the obesity data
 
 # %%
-# select relevant columns for correlations
-for_corr = li_owob_mh_sr_fp_tn[
-    [
-        "overweight_and_obese_year_6",
-        "overweight_year_6",
-        "obese_incl_severely_obese_year_6",
-        "low_income_%",
-        "pupil_mental_health_needs_%",
-        "school_readiness_%",
-        "fuel_pov_%",
-        "night_time_transport_noise_%",
-    ]
-].rename(
+# rename columns for correlation table
+for_corr = combined_datasets.rename(
     columns={
         "low_income_%": "children_low_income",
         "pupil_mental_health_needs_%": "pupil_mental_health_needs",
