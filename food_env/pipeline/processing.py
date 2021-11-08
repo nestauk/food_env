@@ -27,9 +27,9 @@ def combine_hackney_and_city_of_london(
     indicator.at[
         hackney_and_city_of_london_idx, region_lbl
     ] = "Hackney and City of London"
-    indicator.drop([hackney_idx, city_of_london_idx], axis=0, inplace=True)
-    indicator.reset_index(drop=True, inplace=True)
-    return indicator
+    return indicator.drop([hackney_idx, city_of_london_idx], axis=0).reset_index(
+        drop=True
+    )
 
 
 def add_percentage(indicator, new_percent_col, numerator_col, denominator_col):
