@@ -26,10 +26,12 @@ from food_env.getters.public_health_england import (
     get_violent_crime,
     get_youth_justice_system,
 )
+from food_env.getters.urban_health import get_food_vulnerability
 from food_env.pipeline.processing import (
     combine_hackney_and_city_of_london,
     add_percentage,
 )
+import dataframe_image as dfi
 
 # %%
 # load and reformat low income data
@@ -136,6 +138,19 @@ yj = add_percentage(
 )
 
 # %%
+# load and reformat food security
+fv = get_food_vulnerability()
+# Hackney and City of London are not combined,
+# and the vulnerability index score is already computed
+# so it is hard to combine them...
+# can rename Hackney to 'Hackney and City of London'
+# and value will be slightly wrong
+# or do nothing and Hsckney and City of London will be exclused
+# from the correlations
+fv.loc[fv["areaname"] == "Hackney", "areaname"] = "Hackney and City of London"
+
+
+# %%
 # merge all datasets
 combined_datasets = (
     owob.merge(li, on="areaname")
@@ -145,13 +160,13 @@ combined_datasets = (
     .merge(tn, on="areaname")
     .merge(vc, on="areaname")
     .merge(yj, on="areaname")
+    .merge(fv, on="areaname")
 )
 
 # %%
-# # check which local authorities are missing from merged dataset
-# missing = list(sorted(set(ldn.region_name) - set(li_owob.local_authority)))
+# check which local authorities are missing from merged dataset
+# missing = list(sorted(set(combined_datasets1.areaname) - set(combined_datasets2.areaname)))
 # missing
-# # local authorities are missing as numbers too small in Enfield/Wandsworth for the obesity data
 
 # %%
 # rename columns for correlation table
@@ -164,12 +179,19 @@ for_corr = combined_datasets.rename(
         "night_time_transport_noise_%": "night_time_transport_noise",
         "violent_crime_per_100_people": "violent_crime",
         "first_time_entrants_to_the_youth_justice_system_per_100_people": "youth_justice_system",
+        "food_vulnerability_index_score": "food_vulnerability",
     }
 )
 
 # %%
 # plot correlations
-correlations = for_corr.corr()
-correlations.style.background_gradient(cmap="Blues")
+correlations = for_corr.corr().style.background_gradient(cmap="coolwarm")
+dfi.export(correlations, "correlations.png")
+correlations
 
 # %%
+# look for obesity broken down by gender or race
+
+# add wellbeing / happiness
+
+# add loneliness
