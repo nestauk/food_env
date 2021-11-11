@@ -12,7 +12,8 @@ def get_childhood_obesity():
     """Returns dataframe of childhood weights for
     reception and year 6 by geography for 2019/2020
     Note: Hackney includes City of London"""
-    cw = (
+
+    return (
         pd.read_excel(
             DOH / "childhood_obesity_by_borough.xlsx",
             sheet_name="2019-20",
@@ -39,6 +40,5 @@ def get_childhood_obesity():
                 "Year 6": "n_children_year_6",
             }
         )
+        .replace("Hackney1", "Hackney and City of London")
     )
-    cw.at[10, "areaname"] = "Hackney and City of London"
-    return cw
