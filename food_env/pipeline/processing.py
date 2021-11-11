@@ -1,5 +1,8 @@
 def combine_hackney_and_city_of_london(
-    indicator, region_lbl, hackney_lbl="Hackney", city_of_london_lbl="City of London"
+    indicator,
+    region_lbl="areaname",
+    hackney_lbl="Hackney",
+    city_of_london_lbl="City of London",
 ):
     """Given a dataframe, combine rows for Hackney and City of London
     into one row.
@@ -7,7 +10,8 @@ def combine_hackney_and_city_of_london(
     Args:
         indicator (df): indicator dataframe with rows for
             Hackney and City of London that need to be combined
-        region_lbl (str): dataframe column name relating to region
+        region_lbl (str): dataframe column name relating to region,
+            defaults to "areaname"
         hackney_lbl (str): region label for Hackney,
             defaults to "Hackney"
         city_of_london_lbl (str): region label for City of London,
@@ -50,4 +54,15 @@ def add_percentage(indicator, new_percent_col, numerator_col, denominator_col):
     )
     return indicator.drop(columns=[numerator_col, denominator_col]).astype(
         {new_percent_col: "float"}
+    )
+
+
+def combine_hackney_and_city_of_london_and_add_percentage(
+    indicator, new_percent_col, numerator_col, denominator_col
+):
+    """Pipes combine_hackney_and_city_of_london and add_percentage
+    functions onto indicator
+    """
+    return indicator.pipe(combine_hackney_and_city_of_london).pipe(
+        add_percentage, new_percent_col, numerator_col, denominator_col
     )
