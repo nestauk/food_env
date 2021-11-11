@@ -45,26 +45,30 @@ li = combine_hackney_and_city_of_london_and_add_percentage(
 
 # %%
 # load and reformat child obesity data
-owob = get_childhood_obesity()[
-    ["ons_code", "areaname", "overweight_year_6", "obese_incl_severely_obese_year_6"]
-].head(-10)
-owob = owob[owob["overweight_year_6"] != "u"].reset_index(drop=True)
-owob["overweight_and_obese_year_6"] = (
-    owob["overweight_year_6"] + owob["obese_incl_severely_obese_year_6"]
-)
-owob = owob[
-    [
-        "areaname",
-        "overweight_and_obese_year_6",
-        "overweight_year_6",
-        "obese_incl_severely_obese_year_6",
+owob = (
+    get_childhood_obesity()
+    .head(-10)  # lose higher level regions
+    .query('overweight_year_6 != "u"')  # filter out supressed records
+    .query('obese_incl_severely_obese_year_6 != "u"')
+    .reset_index(drop=True)
+    .assign(
+        overweight_and_obese_year_6=lambda x: x["overweight_year_6"]
+        + x["obese_incl_severely_obese_year_6"]
+    )[
+        [
+            "areaname",
+            "overweight_and_obese_year_6",
+            "overweight_year_6",
+            "obese_incl_severely_obese_year_6",
+        ]
     ]
-].astype(
-    {
-        "overweight_and_obese_year_6": "float",
-        "overweight_year_6": "float",
-        "obese_incl_severely_obese_year_6": "float",
-    }
+    .astype(
+        {
+            "overweight_and_obese_year_6": "float",
+            "overweight_year_6": "float",
+            "obese_incl_severely_obese_year_6": "float",
+        }
+    )
 )
 # owob.sort_values(by=['overweight_and_obese_year_6'])
 
