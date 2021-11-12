@@ -121,7 +121,8 @@ def get_high_night_time_transport_noise():
 
 def get_low_income():
     """Returns dataframe of areaname, count and denominator
-    for children in absolute low income"""
+    for children in absolute low income
+    """
     wdoh = get_all_wider_determinants_of_health()
     return wdoh[wdoh["indicator id"] == 93701][
         ["areaname", "count", "denominator"]
@@ -130,4 +131,17 @@ def get_low_income():
             "count": "low_income_count",
             "denominator": "low_income_denominator",
         }
+    )
+
+
+def get_adult_loneliness():
+    """Returns dataframe of areaname and percentage
+    of adults who feel lonely often / always or
+    some of the time
+    Data Source: https://fingertips.phe.org.uk/search/lonely#page/3/gid/1/pat/6/par/E12000007/ati/102/are/E09000002/iid/93758/age/164/sex/4/cat/-1/ctp/-1/yrr/1/cid/4/tbm/1"""
+    return (
+        pd.read_csv(PHE / "adults_who_feel_lonely.csv", usecols=["AreaName", "Value"])
+        .rename(str.lower, axis="columns")
+        .dropna()
+        .rename(columns={"value": "adult_loneliness_%"})
     )

@@ -25,6 +25,7 @@ from food_env.getters.public_health_england import (
     get_high_night_time_transport_noise,
     get_violent_crime,
     get_youth_justice_system,
+    get_adult_loneliness,
 )
 from food_env.getters.urban_health import get_food_vulnerability
 from food_env.pipeline.processing import (
@@ -143,6 +144,16 @@ fv.loc[fv["areaname"] == "Hackney", "areaname"] = "Hackney and City of London"
 
 
 # %%
+al = get_adult_loneliness()
+# The other datasets have Hackney and City of London,
+# but in this dataset the figures for City of London
+# have been suppressed. Therefore, can rename Hackney to
+# 'Hackney and City of London' and value will be slightly wrong
+# or do nothing and Hsckney and City of London will be excluded
+# from the correlations
+al.loc[al["areaname"] == "Hackney", "areaname"] = "Hackney and City of London"
+
+# %%
 # merge all datasets
 combined_datasets = (
     owob.merge(li, on="areaname")
@@ -153,6 +164,7 @@ combined_datasets = (
     .merge(vc, on="areaname")
     .merge(yj, on="areaname")
     .merge(fv, on="areaname")
+    .merge(al, on="areaname")
 )
 
 # %%
@@ -172,6 +184,7 @@ for_corr = combined_datasets.rename(
         "violent_crime_per_100_people": "violent_crime",
         "first_time_entrants_to_the_youth_justice_system_per_100_people": "youth_justice_system",
         "food_vulnerability_index_score": "food_vulnerability",
+        "adult_loneliness_%": "adult_loneliness",
     }
 )
 
@@ -185,5 +198,3 @@ correlations
 # look for obesity broken down by gender or race
 
 # add wellbeing / happiness
-
-# add loneliness
