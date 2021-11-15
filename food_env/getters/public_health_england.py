@@ -145,3 +145,46 @@ def get_adult_loneliness():
         .dropna()
         .rename(columns={"value": "adult_loneliness_%"})
     )
+
+
+def get_adult_obesity():
+    """Returns dataframe of areaname, count and denominator
+    for adults (aged 18+) classified as overweight or obese
+    Data Source: https://fingertips.phe.org.uk/search/weight#page/3/gid/1/pat/6/par/E12000007/ati/102/are/E09000002/iid/93088/age/168/sex/4/cat/-1/ctp/-1/yrr/1/cid/4/tbm/1"""
+    return (
+        pd.read_csv(
+            PHE / "adult_obesity.csv", usecols=["AreaName", "Value", "Denominator"]
+        )
+        .rename(str.lower, axis="columns")
+        .assign(count=lambda x: x.value / 100 * x.denominator)
+        .rename(
+            columns={
+                "count": "overweight_or_obese_count",
+                "denominator": "overweight_or_obese_denominator",
+            }
+        )
+    )[["areaname", "overweight_or_obese_denominator", "overweight_or_obese_count"]]
+
+
+def get_fast_food():
+    """Returns dataframe of areaname and fast food restaurant
+    rate per 100,000 population
+    Data Source: https://www.gov.uk/government/publications/fast-food-outlets-density-by-local-authority-in-england
+    """
+    return (
+        pd.read_excel(
+            PHE / "fast_food_metadata.xlsx",
+            sheet_name="Local Authority Data",
+            header=3,
+            usecols=[1, 3, 4, 5],
+        )
+        .query("`PHE Centre` == 'London'")
+        .drop(columns=["PHE Centre", "Count of outlets"])
+        .reset_index(drop=True)
+        .rename(
+            columns={
+                "LA name": "areaname",
+                "Rate per 100,000 population": "fast_food_rate_per_100000_pop",
+            }
+        )
+    )

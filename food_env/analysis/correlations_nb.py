@@ -26,6 +26,8 @@ from food_env.getters.public_health_england import (
     get_violent_crime,
     get_youth_justice_system,
     get_adult_loneliness,
+    get_adult_obesity,
+    get_fast_food,
 )
 from food_env.getters.office_national_statistics import get_happiness, get_satisfaction
 from food_env.getters.urban_health import get_food_vulnerability
@@ -131,7 +133,7 @@ yj = combine_hackney_and_city_of_london_and_add_percentage(
 )
 
 # %%
-# load and reformat food vulnerability, loneliness, satisfaction and happiness
+# load and reformat food vulnerability, loneliness, satisfaction, happiness and fast food
 fv = get_food_vulnerability().replace("Hackney", "Hackney and City of London")
 al = get_adult_loneliness().replace("Hackney", "Hackney and City of London")
 sat = (
@@ -144,6 +146,11 @@ hap = (
     .query('areaname != "City of London"')
     .replace("Hackney", "Hackney and City of London")
 )
+ff = (
+    get_fast_food()
+    .query('areaname != "City of London*"')
+    .replace("Hackney", "Hackney and City of London")
+)
 # The other datasets have Hackney and City of London,
 # but here Hackney and City of London are not combined
 # and the values are already computed or City of London is
@@ -154,6 +161,15 @@ hap = (
 # or do nothing and Hsckney and City of London will be excluded
 # from the correlations
 
+
+# %%
+# load and refroamt adult obesity data
+ao = combine_hackney_and_city_of_london_and_add_percentage(
+    get_adult_obesity(),
+    new_percent_col="adults_overweight_or_obese_%",
+    numerator_col="overweight_or_obese_count",
+    denominator_col="overweight_or_obese_denominator",
+)
 
 # %%
 # merge all datasets
@@ -169,6 +185,8 @@ combined_datasets = (
     .merge(al, on="areaname")
     .merge(sat, on="areaname")
     .merge(hap, on="areaname")
+    .merge(ao, on="areaname")
+    .merge(ff, on="areaname")
 )
 
 # %%
@@ -191,6 +209,8 @@ for_corr = combined_datasets.rename(
         "adult_loneliness_%": "adult_loneliness",
         "high_levels_satisfaction_%": "high_levels_satisfaction",
         "high_levels_happiness_%": "high_levels_happiness",
+        "adults_overweight_or_obese_%": "adults_overweight_or_obese",
+        "fast_food_rate_per_100000_pop": "fast_food_restaurants",
     }
 )
 
@@ -199,6 +219,3 @@ for_corr = combined_datasets.rename(
 correlations = for_corr.corr().style.background_gradient(cmap="coolwarm")
 dfi.export(correlations, "correlations.png")
 correlations
-
-# %%
-# look for obesity broken down by gender or race
