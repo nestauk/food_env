@@ -173,20 +173,13 @@ ao = combine_hackney_and_city_of_london_and_add_percentage(
 
 # %%
 # merge all datasets
+dfs = [owob, mh, sr, fp, tn, vc, yj, fv, al, sat, hap, ao, ff]
+for df in dfs:
+    df.set_index("areaname", inplace=True)
 combined_datasets = (
-    owob.merge(li, on="areaname")
-    .merge(mh, on="areaname")
-    .merge(sr, on="areaname")
-    .merge(fp, on="areaname")
-    .merge(tn, on="areaname")
-    .merge(vc, on="areaname")
-    .merge(yj, on="areaname")
-    .merge(fv, on="areaname")
-    .merge(al, on="areaname")
-    .merge(sat, on="areaname")
-    .merge(hap, on="areaname")
-    .merge(ao, on="areaname")
-    .merge(ff, on="areaname")
+    pd.concat(dfs, axis=1, sort=False, join="inner")
+    .reset_index()
+    .rename(columns={"index": "areaname"})
 )
 
 # %%
