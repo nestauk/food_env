@@ -22,6 +22,7 @@ def get_all_mental_health_wellbeing():
 def get_school_mental_health_needs():
     """Returns dataframe of areaname, count and denominator for
     school pupils with social, emotional and mental health needs
+    for London local authorities for 2020
     """
     return (
         get_all_mental_health_wellbeing()
@@ -47,7 +48,7 @@ def get_all_wider_determinants_of_health():
 
 def get_fuel_poverty():
     """Returns dataframe of areaname, count and denominator for
-    people in fuel poverty
+    people in fuel poverty for 2019
     """
 
     return (
@@ -63,7 +64,7 @@ def get_fuel_poverty():
 
 def get_violent_crime():
     """Returns dataframe of areaname, count and denominator for
-    violent offences
+    violent offences for 2020/21
     """
     return (
         get_all_wider_determinants_of_health()
@@ -81,7 +82,7 @@ def get_violent_crime():
 
 def get_youth_justice_system():
     """Returns dataframe of areaname, count and denominator for
-    first time entrants to the youth justice system
+    first time entrants to the youth justice system for 2020
     """
     return (
         get_all_wider_determinants_of_health()
@@ -102,6 +103,7 @@ def get_school_readiness():
     """Returns dataframe of areaname, count and denominator for
     children achieving at least the expected level of development
     in communication, language and literacy skills at the end of Reception
+    for 2018/19
     """
     return (
         get_all_wider_determinants_of_health()
@@ -118,7 +120,7 @@ def get_school_readiness():
 def get_high_night_time_transport_noise():
     """Returns dataframe of areaname, count and denominator for
     the population exposed to road, rail and air transport noise
-    of 55 dB(A) or more during the night-time
+    of 55 dB(A) or more during the night-time for 2016
     """
     return (
         get_all_wider_determinants_of_health()
@@ -134,7 +136,7 @@ def get_high_night_time_transport_noise():
 
 def get_low_income():
     """Returns dataframe of areaname, count and denominator
-    for children in absolute low income
+    for children in absolute low income 2019/20
     """
     return (
         get_all_wider_determinants_of_health()
@@ -151,7 +153,7 @@ def get_low_income():
 def get_adult_loneliness():
     """Returns dataframe of areaname and percentage
     of adults who feel lonely often / always or
-    some of the time
+    some of the time for 2019/20
     Data Source: https://fingertips.phe.org.uk/search/lonely#page/3/gid/1/pat/6/par/E12000007/ati/102/are/E09000002/iid/93758/age/164/sex/4/cat/-1/ctp/-1/yrr/1/cid/4/tbm/1"""
     return (
         pd.read_csv(PHE / "adults_who_feel_lonely.csv", usecols=["AreaName", "Value"])
@@ -164,6 +166,7 @@ def get_adult_loneliness():
 def get_adult_obesity():
     """Returns dataframe of areaname, count and denominator
     for adults (aged 18+) classified as overweight or obese
+    for 2019/20
     Data Source: https://fingertips.phe.org.uk/search/weight#page/3/gid/1/pat/6/par/E12000007/ati/102/are/E09000002/iid/93088/age/168/sex/4/cat/-1/ctp/-1/yrr/1/cid/4/tbm/1"""
     return (
         pd.read_csv(
@@ -182,7 +185,7 @@ def get_adult_obesity():
 
 def get_fast_food():
     """Returns dataframe of areaname and fast food restaurant
-    rate per 100,000 population
+    rate per 100,000 population on 31/12/2017
     Data Source: https://www.gov.uk/government/publications/fast-food-outlets-density-by-local-authority-in-england
     """
     return (
