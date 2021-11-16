@@ -23,12 +23,15 @@ def get_school_mental_health_needs():
     """Returns dataframe of areaname, count and denominator for
     school pupils with social, emotional and mental health needs
     """
-    mhw = get_all_mental_health_wellbeing()
-    return mhw[mhw["age"] == "School age"][["areaname", "count", "denominator"]].rename(
-        columns={
-            "count": "school_mental_health_needs_count",
-            "denominator": "school_mental_health_needs_denominator",
-        }
+    return (
+        get_all_mental_health_wellbeing()
+        .query("age == 'School age'")[["areaname", "count", "denominator"]]
+        .rename(
+            columns={
+                "count": "school_mental_health_needs_count",
+                "denominator": "school_mental_health_needs_denominator",
+            }
+        )
     )
 
 
@@ -46,12 +49,15 @@ def get_fuel_poverty():
     """Returns dataframe of areaname, count and denominator for
     people in fuel poverty
     """
-    wdoh = get_all_wider_determinants_of_health()
-    return wdoh[
-        wdoh["indicator name"]
-        == "B17 - Fuel poverty (low income, low energy efficiency methodology)"
-    ][["areaname", "count", "denominator"]].rename(
-        columns={"count": "fuel_pov_count", "denominator": "fuel_pov_denominator"}
+
+    return (
+        get_all_wider_determinants_of_health()
+        .query(
+            "`indicator name` == 'B17 - Fuel poverty (low income, low energy efficiency methodology)'"
+        )[["areaname", "count", "denominator"]]
+        .rename(
+            columns={"count": "fuel_pov_count", "denominator": "fuel_pov_denominator"}
+        )
     )
 
 
@@ -59,15 +65,17 @@ def get_violent_crime():
     """Returns dataframe of areaname, count and denominator for
     violent offences
     """
-    wdoh = get_all_wider_determinants_of_health()
-    return wdoh[
-        wdoh["indicator name"]
-        == "B12b - Violent crime - violence offences per 1,000 population"
-    ][["areaname", "count", "denominator"]].rename(
-        columns={
-            "count": "violent_crime_count",
-            "denominator": "violent_crime_denominator",
-        }
+    return (
+        get_all_wider_determinants_of_health()
+        .query(
+            "`indicator name` == 'B12b - Violent crime - violence offences per 1,000 population'"
+        )[["areaname", "count", "denominator"]]
+        .rename(
+            columns={
+                "count": "violent_crime_count",
+                "denominator": "violent_crime_denominator",
+            }
+        )
     )
 
 
@@ -75,15 +83,18 @@ def get_youth_justice_system():
     """Returns dataframe of areaname, count and denominator for
     first time entrants to the youth justice system
     """
-    wdoh = get_all_wider_determinants_of_health()
-    return wdoh[
-        wdoh["indicator name"]
-        == "B04 - First time entrants to the youth justice system"
-    ][["areaname", "count", "denominator"]].rename(
-        columns={
-            "count": "youth_justice_count",
-            "denominator": "youth_justice_denominator",
-        }
+    return (
+        get_all_wider_determinants_of_health()
+        .query(
+            "`indicator name` == 'B04 - First time entrants to the youth justice system'"
+        )[["areaname", "count", "denominator"]]
+        .rename(
+            columns={
+                "count": "youth_justice_count",
+                "denominator": "youth_justice_denominator",
+            }
+        )
+        .fillna(0)
     )
 
 
@@ -92,14 +103,15 @@ def get_school_readiness():
     children achieving at least the expected level of development
     in communication, language and literacy skills at the end of Reception
     """
-    wdoh = get_all_wider_determinants_of_health()
-    return wdoh[wdoh["indicator id"] == 93569][
-        ["areaname", "count", "denominator"]
-    ].rename(
-        columns={
-            "count": "school_readiness_count",
-            "denominator": "school_readiness_denominator",
-        }
+    return (
+        get_all_wider_determinants_of_health()
+        .query("`indicator id` == 93569")[["areaname", "count", "denominator"]]
+        .rename(
+            columns={
+                "count": "school_readiness_count",
+                "denominator": "school_readiness_denominator",
+            }
+        )
     )
 
 
@@ -108,14 +120,15 @@ def get_high_night_time_transport_noise():
     the population exposed to road, rail and air transport noise
     of 55 dB(A) or more during the night-time
     """
-    wdoh = get_all_wider_determinants_of_health()
-    return wdoh[wdoh["indicator id"] == 90358][
-        ["areaname", "count", "denominator"]
-    ].rename(
-        columns={
-            "count": "night_time_transport_noise_count",
-            "denominator": "night_time_transport_noise_denominator",
-        }
+    return (
+        get_all_wider_determinants_of_health()
+        .query("`indicator id` == 90358")[["areaname", "count", "denominator"]]
+        .rename(
+            columns={
+                "count": "night_time_transport_noise_count",
+                "denominator": "night_time_transport_noise_denominator",
+            }
+        )
     )
 
 
@@ -123,14 +136,15 @@ def get_low_income():
     """Returns dataframe of areaname, count and denominator
     for children in absolute low income
     """
-    wdoh = get_all_wider_determinants_of_health()
-    return wdoh[wdoh["indicator id"] == 93701][
-        ["areaname", "count", "denominator"]
-    ].rename(
-        columns={
-            "count": "low_income_count",
-            "denominator": "low_income_denominator",
-        }
+    return (
+        get_all_wider_determinants_of_health()
+        .query("`indicator id` == 93701")[["areaname", "count", "denominator"]]
+        .rename(
+            columns={
+                "count": "low_income_count",
+                "denominator": "low_income_denominator",
+            }
+        )
     )
 
 
