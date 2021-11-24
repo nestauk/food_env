@@ -173,7 +173,7 @@ ao = combine_hackney_and_city_of_london_and_add_percentage(
 
 # %%
 # merge all datasets
-dfs = [owob, mh, sr, fp, tn, vc, yj, fv, al, sat, hap, ao, ff]
+dfs = [owob, li, mh, sr, fp, tn, vc, yj, fv, al, sat, hap, ao, ff]
 for df in dfs:
     df.set_index("areaname", inplace=True)
 combined_datasets = (
@@ -191,7 +191,7 @@ combined_datasets = (
 # rename columns for correlation table
 for_corr = combined_datasets.rename(
     columns={
-        "low_income_%": "children_low_income",
+        "low_income_%": "child_low_income_families",
         "pupil_mental_health_needs_%": "pupil_mental_health_needs",
         "school_readiness_%": "school_readiness",
         "fuel_pov_%": "fuel_poverty",
@@ -200,8 +200,8 @@ for_corr = combined_datasets.rename(
         "first_time_entrants_to_the_youth_justice_system_per_100_people": "youth_justice_system",
         "food_vulnerability_index_score": "food_vulnerability",
         "adult_loneliness_%": "adult_loneliness",
-        "high_levels_satisfaction_%": "high_levels_satisfaction",
-        "high_levels_happiness_%": "high_levels_happiness",
+        "high_levels_satisfaction_%": "adult_satisfaction",
+        "high_levels_happiness_%": "adult_happiness",
         "adults_overweight_or_obese_%": "adults_overweight_or_obese",
         "fast_food_rate_per_100000_pop": "fast_food_restaurants",
     }
