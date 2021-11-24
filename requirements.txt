@@ -9,3 +9,6 @@ tqdm
 filelock
 typer
 sh
+xlrd==1.2.0
+openpyxl
+dataframe-image
